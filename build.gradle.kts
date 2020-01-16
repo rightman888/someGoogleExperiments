@@ -19,6 +19,7 @@ configurations {
 }
 
 repositories {
+	google()
 	mavenCentral()
 }
 
@@ -30,6 +31,9 @@ dependencies {
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
+	implementation("com.google.api-client:google-api-client:1.30.4")
+	implementation("com.google.oauth-client:google-oauth-client-jetty:1.30.1")
+	implementation("com.google.apis:google-api-services-docs:v1-rev20190827-1.30.1")
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
 	runtimeOnly("org.postgresql:postgresql")
 	testImplementation("org.springframework.boot:spring-boot-starter-test") {
