@@ -1,9 +1,5 @@
 package com.example.kotlinBeta.controllers
 
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.RestController
-import reactor.core.publisher.Flux
-import java.time.Duration
 import com.google.api.client.auth.oauth2.Credential
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp
 import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver
@@ -15,19 +11,21 @@ import com.google.api.client.json.jackson2.JacksonFactory
 import com.google.api.client.util.store.FileDataStoreFactory
 import com.google.api.services.docs.v1.Docs
 import com.google.api.services.docs.v1.DocsScopes
-import org.apache.http.client.methods.HttpGet
-import org.apache.http.impl.client.HttpClientBuilder
-import java.io.ByteArrayInputStream
-import java.io.InputStream
+import com.google.api.services.drive.Drive
+import com.google.api.services.drive.DriveScopes
+import com.google.api.services.drive.model.Permission
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.RestController
+import reactor.core.publisher.Flux
 import java.io.InputStreamReader
-import java.util.Collections
+import java.time.Duration
 
 @RestController
 class RestBetaContoller() {
 
     private val factory = JacksonFactory.getDefaultInstance()
 
-    val scopes = Collections.singletonList(DocsScopes.DOCUMENTS_READONLY)
+    val scopes: List<String> = listOf(DocsScopes.DOCUMENTS, DriveScopes.DRIVE)
     val TOKENS_DIR_PATH = "tokens"
     val APP_NAME = "Super Name"
     val DOCID = "1hBeXIThmhCGrmnpWZ49TNNSWTBNpIUQSW4MdxqmGtYI"
@@ -40,6 +38,12 @@ class RestBetaContoller() {
 
     @GetMapping("/doc")
     fun getDocTitle(): String = getDoc()
+
+    @GetMapping("/filelist")
+    fun getFileList(): String = getFiles()
+
+    @GetMapping("/sharedoc")
+    fun sharedocument(): String = shareDoc()
 
     fun getCredentials(transport: NetHttpTransport): Credential {
 
@@ -70,6 +74,29 @@ class RestBetaContoller() {
 
         val resp = service.documents().get(DOCID).execute()
         return resp.toPrettyString()
+    }
+
+    fun getFiles(): String {
+        val transport = GoogleNetHttpTransport.newTrustedTransport()
+        val service = Drive.Builder(transport, factory, getCredentials(transport)).setApplicationName(APP_NAME).build()
+        val result = service.Files().list().setPageSize(10).setFields("files(id,name)").execute()
+        val files = result.files
+        if (files.isNullOrEmpty()) {
+            return ""
+        } else {
+            return files.map { " " + it.name + " : " + it.id + " "}.toString()
+        }
+    }
+
+    fun shareDoc(): String {
+        val transport = GoogleNetHttpTransport.newTrustedTransport()
+        val service = Drive.Builder(transport, factory, getCredentials(transport)).setApplicationName(APP_NAME).build()
+
+
+        val userPerm = Permission().setType("user").setRole("writer").setEmailAddress("rightman777@gmail.com")
+        service.permissions().create(DOCID, userPerm).setFields("id").execute()
+        return ""
+
     }
 
 }
