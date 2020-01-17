@@ -15,8 +15,8 @@ import com.google.api.services.drive.Drive
 import com.google.api.services.drive.DriveScopes
 import com.google.api.services.drive.model.Permission
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.mail.SimpleMailMessage
 import org.springframework.mail.javamail.JavaMailSender
+import org.springframework.mail.javamail.MimeMessageHelper
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 import reactor.core.publisher.Flux
@@ -109,11 +109,14 @@ class RestBetaContoller(private val emailSender: JavaMailSender) {
     }
 
     fun sendSuccessRegistrationMessage(): String {
-        val message = SimpleMailMessage()
-        message.setTo("")
-        message.setSubject("meow")
-        message.setText("testMeow")
-        message.setFrom(sourceEmailAddress)
+
+        val message = emailSender.createMimeMessage()
+        val mimeMessageHelper = MimeMessageHelper(message, true)
+        mimeMessageHelper.setTo("")
+        mimeMessageHelper.setSubject("meow")
+        mimeMessageHelper.setText("testMeow")
+        mimeMessageHelper.setFrom(sourceEmailAddress)
+        mimeMessageHelper.addAttachment("murr.txt") {"mrrrrrrrrrrrrrrr".byteInputStream()}
         emailSender.send(message)
         return ""
     }
