@@ -14,6 +14,9 @@ import com.google.api.services.docs.v1.DocsScopes
 import com.google.api.services.drive.Drive
 import com.google.api.services.drive.DriveScopes
 import com.google.api.services.drive.model.Permission
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.mail.SimpleMailMessage
+import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 import reactor.core.publisher.Flux
@@ -21,7 +24,7 @@ import java.io.InputStreamReader
 import java.time.Duration
 
 @RestController
-class RestBetaContoller() {
+class RestBetaContoller(private val emailSender: JavaMailSender) {
 
     private val factory = JacksonFactory.getDefaultInstance()
 
@@ -29,6 +32,9 @@ class RestBetaContoller() {
     val TOKENS_DIR_PATH = "tokens"
     val APP_NAME = "Super Name"
     val DOCID = "1hBeXIThmhCGrmnpWZ49TNNSWTBNpIUQSW4MdxqmGtYI"
+
+    @Value("\${spring.mail.username}")
+    lateinit var sourceEmailAddress: String
 
     @GetMapping("/single")
     fun getSingleMeow(): String = "meow"
@@ -44,6 +50,9 @@ class RestBetaContoller() {
 
     @GetMapping("/sharedoc")
     fun sharedocument(): String = shareDoc()
+
+    @GetMapping("/emailer")
+    fun emailer(): String = sendSuccessRegistrationMessage()
 
     fun getCredentials(transport: NetHttpTransport): Credential {
 
@@ -97,6 +106,16 @@ class RestBetaContoller() {
         service.permissions().create(DOCID, userPerm).setFields("id").execute()
         return ""
 
+    }
+
+    fun sendSuccessRegistrationMessage(): String {
+        val message = SimpleMailMessage()
+        message.setTo("")
+        message.setSubject("meow")
+        message.setText("testMeow")
+        message.setFrom(sourceEmailAddress)
+        emailSender.send(message)
+        return ""
     }
 
 }
